@@ -9,8 +9,8 @@ public class ReplyMessages {
     public static final String SBER_TEAM = "Укажи команду.\nНапример: Lab.SberPay.NFC\nили Lab.Платежный счет. Продукт";
     public static final String SBER_ROLE = "Укажи свою роль в команде.\nНапример: senior golang разработчик";
     public static final String SBER_COMMENT = "Над чем ты работаешь? Коротко опиши свой вклад в продукт, чтобы участники сообщества знали какой ты крутой!";
-    public static final String READY = "\uD83C\uDF89 Добро пожаловать в наше сообщество!\n\nЗаходи в чат по кнопке";
-    public static final String JOIN_COMMUNITY = "Присоединиться к комунити";
+    public static final String READY = "\uD83C\uDF89 Добро пожаловать в наше сообщество!\n\nЗаходи в чат по кнопке\n\nНажимая на кнопку ты даешь согласие на хранение и обработку данных";
+    public static final String JOIN_COMMUNITY = "Присоединиться к комьюнити";
     public static final String INVALID_LOGIN = "Некорректный логин. Попробуй ещё раз.";
     public static final String INVALID_TEXT = "Некорректный текст. Попробуй ещё раз.";
     public static final String ERROR = "Что-то пошло не так. Попробуй ещё раз.";
