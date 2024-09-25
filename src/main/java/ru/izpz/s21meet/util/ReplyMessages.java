@@ -10,5 +10,6 @@ public class ReplyMessages {
     public static final String READY = "\uD83C\uDF89 Добро пожаловать в наше сообщество!\n\nЗаходи в чат по кнопке";
     public static final String JOIN_COMMUNITY = "Присоединиться к комунити";
     public static final String INVALID_LOGIN = "Некорректный логин. Попробуй ещё раз.";
+    public static final String INVALID_TEXT = "Некорректный текст. Попробуй ещё раз.";
     public static final String ERROR = "Что-то пошло не так. Попробуй ещё раз.";
 }

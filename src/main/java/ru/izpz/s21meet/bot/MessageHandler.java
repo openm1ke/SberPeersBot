@@ -18,8 +18,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.izpz.s21meet.util.ValidationUtils.isValidLogin;
-import static ru.izpz.s21meet.util.ValidationUtils.isValidSchoolLogin;
+import static ru.izpz.s21meet.util.ValidationUtils.*;
 
 @Slf4j
 @Component
@@ -93,7 +92,7 @@ public class MessageHandler {
 
     private void handleSberLogin(TelegramUser telegramUser, String message) {
         String replyMessage = ReplyMessages.INVALID_LOGIN;
-        if (isValidLogin(message)) {
+        if (isValidText(message)) {
             telegramUser.setSberLogin(message);
             telegramUser.setStatus(Status.SBER_TEAM);
             telegramUserService.update(telegramUser);
@@ -103,8 +102,8 @@ public class MessageHandler {
     }
 
     private void handleSberTeam(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_LOGIN;
-        if (isValidLogin(message)) {
+        String replyMessage = ReplyMessages.INVALID_TEXT;
+        if (isValidText(message)) {
             telegramUser.setSberTeam(message);
             telegramUser.setStatus(Status.SBER_ROLE);
             telegramUserService.update(telegramUser);
@@ -114,8 +113,8 @@ public class MessageHandler {
     }
 
     private void handleSberRole(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_LOGIN;
-        if (isValidLogin(message)) {
+        String replyMessage = ReplyMessages.INVALID_TEXT;
+        if (isValidText(message)) {
             telegramUser.setSberRole(message);
             telegramUser.setStatus(Status.READY);
             telegramUserService.update(telegramUser);

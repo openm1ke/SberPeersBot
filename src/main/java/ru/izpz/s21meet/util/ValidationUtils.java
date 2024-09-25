@@ -9,4 +9,8 @@ public class ValidationUtils {
     public static boolean isValidLogin(String login) {
         return login != null && login.trim().length() > 3 && login.trim().length() <= 16;
     }
+
+    public static boolean isValidText(String login) {
+        return login != null && !login.trim().isEmpty();
+    }
 }
