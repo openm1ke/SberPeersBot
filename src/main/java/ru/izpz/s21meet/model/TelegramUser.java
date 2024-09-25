@@ -26,11 +26,17 @@ public class TelegramUser {
     @Column(name = "sber_login")
     private String sberLogin;
 
+    @Column(name = "telegram_login")
+    private String telegramLogin;
+
     @Column(name = "sber_team")
     private String sberTeam;
 
     @Column(name = "sber_role")
     private String sberRole;
+
+    @Column(name = "sber_comment")
+    private String sberComment;
 
     @Column(name = "status")
     private Status status;

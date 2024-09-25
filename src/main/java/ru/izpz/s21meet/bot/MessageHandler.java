@@ -60,11 +60,17 @@ public class MessageHandler {
             case SBER_LOGIN:
                 handleSberLogin(telegramUser, message);
                 break;
+            case TELEGRAM_LOGIN:
+                handleTelegramLogin(telegramUser, message);
+                break;
             case SBER_TEAM:
                 handleSberTeam(telegramUser, message);
                 break;
             case SBER_ROLE:
                 handleSberRole(telegramUser, message);
+                break;
+            case SBER_COMMENT:
+                handleSberComment(telegramUser, message);
                 break;
             case READY:
                 handleReady(telegramUser);
@@ -94,6 +100,18 @@ public class MessageHandler {
         String replyMessage = ReplyMessages.INVALID_LOGIN;
         if (isValidText(message)) {
             telegramUser.setSberLogin(message);
+            telegramUser.setStatus(Status.TELEGRAM_LOGIN);
+            telegramUserService.update(telegramUser);
+            replyMessage = ReplyMessages.TELEGRAM_LOGIN;
+        }
+        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
+    }
+
+
+    private void handleTelegramLogin(TelegramUser telegramUser, String message) {
+        String replyMessage = ReplyMessages.INVALID_LOGIN;
+        if (isValidText(message)) {
+            telegramUser.setTelegramLogin(message);
             telegramUser.setStatus(Status.SBER_TEAM);
             telegramUserService.update(telegramUser);
             replyMessage = ReplyMessages.SBER_TEAM;
@@ -116,37 +134,53 @@ public class MessageHandler {
         String replyMessage = ReplyMessages.INVALID_TEXT;
         if (isValidText(message)) {
             telegramUser.setSberRole(message);
+            telegramUser.setStatus(Status.SBER_COMMENT);
+            telegramUserService.update(telegramUser);
+            replyMessage = ReplyMessages.SBER_COMMENT;
+        }
+        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
+    }
+
+
+    private void handleSberComment(TelegramUser telegramUser, String message) {
+        String replyMessage = ReplyMessages.INVALID_TEXT;
+        if (isValidText(message)) {
+            telegramUser.setSberComment(message);
             telegramUser.setStatus(Status.READY);
             telegramUserService.update(telegramUser);
             replyMessage = ReplyMessages.READY;
-
-            // Создание кнопки
-            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-            inlineKeyboardButton.setText(ReplyMessages.JOIN_COMMUNITY);
-            inlineKeyboardButton.setUrl(JOIN_URL);  // Твой URL
-
-            // Добавляем кнопку в строку и клавиатуру
-            List<InlineKeyboardButton> rowInline = new ArrayList<>();
-            rowInline.add(inlineKeyboardButton);
-            List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-            rowsInline.add(rowInline);
-            inlineKeyboardMarkup.setKeyboard(rowsInline);
-
-            // Отправка сообщения с кнопкой
-            telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage, inlineKeyboardMarkup);
+            replyJoinCommunity(telegramUser, replyMessage);
             try {
                 googleSheetsService.addUserToSheet(telegramUser);
             } catch (IOException | GeneralSecurityException e) {
                 telegramMessageService.sendMessage(ADMIN_ID, e.getMessage());
             }
+
         } else {
             telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
         }
     }
 
+    private void replyJoinCommunity(TelegramUser telegramUser, String replyMessage) {
+        // Создание кнопки
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+        inlineKeyboardButton.setText(ReplyMessages.JOIN_COMMUNITY);
+        inlineKeyboardButton.setUrl(JOIN_URL);  // Твой URL
+
+        // Добавляем кнопку в строку и клавиатуру
+        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+        rowInline.add(inlineKeyboardButton);
+        List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+        rowsInline.add(rowInline);
+        inlineKeyboardMarkup.setKeyboard(rowsInline);
+
+        // Отправка сообщения с кнопкой
+        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage, inlineKeyboardMarkup);
+    }
+
     private void handleReady(TelegramUser telegramUser) {
-        telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.READY);
+        replyJoinCommunity(telegramUser, ReplyMessages.READY);
     }
 
     private void handleError(TelegramUser telegramUser) {

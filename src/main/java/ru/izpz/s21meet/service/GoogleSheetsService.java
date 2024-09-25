@@ -68,8 +68,10 @@ public class GoogleSheetsService {
                 String.valueOf(telegramUser.getChatId()),
                 telegramUser.getSchoolLogin(),
                 telegramUser.getSberLogin(),
+                telegramUser.getTelegramLogin(),
                 telegramUser.getSberTeam(),
                 telegramUser.getSberRole(),
+                telegramUser.getSberComment(),
                 telegramUser.getStatus().toString()
         };
         addDataToSheet(data, "Sheet1");

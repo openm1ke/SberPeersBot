@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS sber.telegram_users (
     chat_id BIGINT NOT NULL,
     school_login VARCHAR(255),
     sber_login VARCHAR(255),
+    telegram_login VARCHAR(255),
     sber_team VARCHAR(255),
     sber_role VARCHAR(255),
+    sber_comment VARCHAR(255),
     status SMALLINT
 --     first_name VARCHAR(255),
 --     last_name VARCHAR(255)
