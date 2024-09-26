@@ -52,8 +52,22 @@ public class MessageHandler {
         log.info("User with chatId {} not found. Registering...", chatId);
     }
 
+    private void handleNew(TelegramUser telegramUser, String message) {
+        telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SCHOOL_LOGIN);
+        telegramUser.setStatus(Status.SCHOOL_LOGIN);
+        telegramUserService.update(telegramUser);
+    }
     private void handleUserByStatus(TelegramUser telegramUser, String message) {
+
+        if(message.equals("/start")) {
+            telegramUser.setStatus(Status.NEW);
+            telegramUserService.update(telegramUser);
+        }
+
         switch (telegramUser.getStatus()) {
+            case NEW:
+                handleNew(telegramUser, message);
+                break;
             case SCHOOL_LOGIN:
                 handleSchoolLogin(telegramUser, message);
                 break;
