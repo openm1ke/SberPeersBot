@@ -63,7 +63,7 @@ public class S21MeetBot extends TelegramLongPollingBot {
      */
     public void initializeCommandMenu() {
         try {
-            execute(MyCommandMenu.standartMenuUser());
+            execute(MyCommandMenu.deleteMenuGroup());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

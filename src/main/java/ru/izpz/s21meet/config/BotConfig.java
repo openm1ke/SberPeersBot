@@ -33,6 +33,7 @@ public class BotConfig {
     public TelegramBotsApi telegramBotsApi(S21MeetBot s21MeetBot) throws Exception {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(s21MeetBot);
+        s21MeetBot.initializeCommandMenu();
         return telegramBotsApi;
     }
 }
