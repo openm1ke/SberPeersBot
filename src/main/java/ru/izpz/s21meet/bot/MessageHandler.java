@@ -36,66 +36,47 @@ public class MessageHandler {
     private final GoogleSheetsService googleSheetsService;
 
     public void handle(long chatId, String message) {
-        TelegramUser telegramUser = telegramUserService.getUser(chatId);
         message = message.trim();
+        TelegramUser telegramUser = telegramUserService.getUser(chatId);
         if (telegramUser == null) {
-            handleNewUser(chatId);
+            registerNewUser(chatId);
         } else {
-            handleUserByStatus(telegramUser, message);
+            processUserStatus(telegramUser, message);
         }
     }
 
-    private void handleNewUser(long chatId) {
+    private void registerNewUser(long chatId) {
         telegramMessageService.sendMessage(chatId, ReplyMessages.NEW_USER);
         telegramMessageService.sendMessage(chatId, ReplyMessages.SCHOOL_LOGIN);
         telegramUserService.addUser(chatId);
     }
 
-    private void handleNew(TelegramUser telegramUser, String message) {
-        telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SCHOOL_LOGIN);
-        telegramUser.setStatus(Status.SCHOOL_LOGIN);
-        telegramUserService.update(telegramUser);
-    }
-    private void handleUserByStatus(TelegramUser telegramUser, String message) {
-
-        if(message.equals("/start")) {
+    private void processUserStatus(TelegramUser telegramUser, String message) {
+        if (message.equals("/start")) {
             telegramUser.setStatus(Status.NEW);
-            telegramUserService.update(telegramUser);
         }
 
         switch (telegramUser.getStatus()) {
-            case NEW:
-                handleNew(telegramUser, message);
-                break;
-            case SCHOOL_LOGIN:
-                handleSchoolLogin(telegramUser, message);
-                break;
-            case SBER_LOGIN:
-                handleSberLogin(telegramUser, message);
-                break;
-            case TELEGRAM_LOGIN:
-                handleTelegramLogin(telegramUser, message);
-                break;
-            case SBER_TEAM:
-                handleSberTeam(telegramUser, message);
-                break;
-            case SBER_ROLE:
-                handleSberRole(telegramUser, message);
-                break;
-            case SBER_COMMENT:
-                handleSberComment(telegramUser, message);
-                break;
-            case READY:
-                handleReady(telegramUser);
-                break;
-            default:
-                handleError(telegramUser);
-                log.error("Unexpected status value: {}", telegramUser.getStatus());
+            case NEW -> promptSchoolLogin(telegramUser);
+            case SCHOOL_LOGIN -> processSchoolLogin(telegramUser, message);
+            case SBER_LOGIN -> processSberLogin(telegramUser, message);
+            case TELEGRAM_LOGIN -> processTelegramLogin(telegramUser, message);
+            case SBER_TEAM -> processSberTeam(telegramUser, message);
+            case SBER_ROLE -> processSberRole(telegramUser, message);
+            case SBER_COMMENT -> processSberComment(telegramUser, message);
+            case READY -> handleReady(telegramUser);
+            default -> handleUnknownStatus(telegramUser);
         }
+
+        // Сохранение изменений только один раз после всей обработки
+        telegramUserService.update(telegramUser);
+    }
+    private void promptSchoolLogin(TelegramUser telegramUser) {
+        telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SCHOOL_LOGIN);
+        telegramUser.setStatus(Status.SCHOOL_LOGIN);
     }
 
-    private void handleSchoolLogin(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_LOGIN;
+    private void processSchoolLogin(TelegramUser telegramUser, String message) {
         if (isValidSchoolLogin(message)) {
             if(telegramUserService.checkSchoolLogin(message)) {
                 telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.ALREADY_REGISTERED);
@@ -103,92 +84,80 @@ public class MessageHandler {
             }
             telegramUser.setSchoolLogin(message);
             telegramUser.setStatus(Status.SBER_LOGIN);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.SBER_LOGIN;
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SBER_LOGIN);
+        } else {
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_LOGIN);
         }
-        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
     }
 
-    private void handleSberLogin(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_LOGIN;
+    private void processSberLogin(TelegramUser telegramUser, String message) {
         if (isValidText(message)) {
             telegramUser.setSberLogin(message);
             telegramUser.setStatus(Status.TELEGRAM_LOGIN);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.TELEGRAM_LOGIN;
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.TELEGRAM_LOGIN);
+        } else {
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_LOGIN);
         }
-        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
     }
 
 
-    private void handleTelegramLogin(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_LOGIN;
+    private void processTelegramLogin(TelegramUser telegramUser, String message) {
         if (isValidText(message)) {
             telegramUser.setTelegramLogin(message);
             telegramUser.setStatus(Status.SBER_TEAM);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.SBER_TEAM;
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SBER_TEAM);
+        } else {
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_LOGIN);
         }
-        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
     }
 
-    private void handleSberTeam(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_TEXT;
+    private void processSberTeam(TelegramUser telegramUser, String message) {
         if (isValidText(message)) {
             telegramUser.setSberTeam(message);
             telegramUser.setStatus(Status.SBER_ROLE);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.SBER_ROLE;
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SBER_ROLE);
+        } else {
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_TEXT);
         }
-        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
     }
 
-    private void handleSberRole(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_TEXT;
+    private void processSberRole(TelegramUser telegramUser, String message) {
         if (isValidText(message)) {
             telegramUser.setSberRole(message);
             telegramUser.setStatus(Status.SBER_COMMENT);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.SBER_COMMENT;
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SBER_COMMENT);
+        } else {
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_TEXT);
         }
-        telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
     }
 
 
-    private void handleSberComment(TelegramUser telegramUser, String message) {
-        String replyMessage = ReplyMessages.INVALID_TEXT;
+    private void processSberComment(TelegramUser telegramUser, String message) {
         if (isValidText(message)) {
             telegramUser.setSberComment(message);
             telegramUser.setStatus(Status.READY);
-            telegramUserService.update(telegramUser);
-            replyMessage = ReplyMessages.READY;
-            replyJoinCommunity(telegramUser, replyMessage);
+            replyJoinCommunity(telegramUser, ReplyMessages.READY);
             try {
                 googleSheetsService.addUserToSheet(telegramUser);
             } catch (IOException | GeneralSecurityException e) {
                 telegramMessageService.sendMessage(ADMIN_ID, e.getMessage());
             }
-
         } else {
-            telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage);
+            telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.INVALID_TEXT);
         }
     }
 
     private void replyJoinCommunity(TelegramUser telegramUser, String replyMessage) {
-        // Создание кнопки
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-        inlineKeyboardButton.setText(ReplyMessages.JOIN_COMMUNITY);
-        inlineKeyboardButton.setUrl(JOIN_URL);  // Твой URL
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(ReplyMessages.JOIN_COMMUNITY);
+        inlineKeyboardButton.setUrl(JOIN_URL);
 
-        // Добавляем кнопку в строку и клавиатуру
         List<InlineKeyboardButton> rowInline = new ArrayList<>();
         rowInline.add(inlineKeyboardButton);
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         rowsInline.add(rowInline);
         inlineKeyboardMarkup.setKeyboard(rowsInline);
 
-        // Отправка сообщения с кнопкой
         telegramMessageService.sendMessage(telegramUser.getChatId(), replyMessage, inlineKeyboardMarkup);
     }
 
@@ -196,7 +165,8 @@ public class MessageHandler {
         replyJoinCommunity(telegramUser, ReplyMessages.READY);
     }
 
-    private void handleError(TelegramUser telegramUser) {
+    private void handleUnknownStatus(TelegramUser telegramUser) {
         telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.ERROR);
+        log.error("Unexpected status value: {}", telegramUser.getStatus());
     }
 }
