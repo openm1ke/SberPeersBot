@@ -49,7 +49,6 @@ public class MessageHandler {
         telegramMessageService.sendMessage(chatId, ReplyMessages.NEW_USER);
         telegramMessageService.sendMessage(chatId, ReplyMessages.SCHOOL_LOGIN);
         telegramUserService.addUser(chatId);
-        log.info("User with chatId {} not found. Registering...", chatId);
     }
 
     private void handleNew(TelegramUser telegramUser, String message) {

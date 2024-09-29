@@ -18,6 +18,7 @@ services:
   bot:
     build: .
     container_name: telegram_bot
+    restart: on-failure
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres

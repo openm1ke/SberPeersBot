@@ -12,7 +12,12 @@ public class MyCommandMenu {
 
     public static DeleteMyCommands deleteMenuGroup() {
         DeleteMyCommands deleteMyCommands = new DeleteMyCommands();
-        //deleteMyCommands.setScope(new BotCommandScopeAllGroupChats());
+        deleteMyCommands.setScope(new BotCommandScopeAllGroupChats());
+        return deleteMyCommands;
+    }
+
+    public static DeleteMyCommands deleteMenuPrivate() {
+        DeleteMyCommands deleteMyCommands = new DeleteMyCommands();
         deleteMyCommands.setScope(new BotCommandScopeAllPrivateChats());
         return deleteMyCommands;
     }
