@@ -69,6 +69,8 @@ public class MessageHandler {
 
     private void processUserStatus(TelegramUser telegramUser, String message) {
         if (message.equals("/start")) {
+            log.info("message /start");
+            telegramUser.setSchoolLogin(null);
             telegramUser.setStatus(Status.NEW);
         }
 
