@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.izpz.s21meet.model.Status;
 import ru.izpz.s21meet.model.TelegramUser;
+import ru.izpz.s21meet.service.GoogleAnalyticsService;
 import ru.izpz.s21meet.service.GoogleSheetsService;
 import ru.izpz.s21meet.service.TelegramMessageService;
 import ru.izpz.s21meet.service.TelegramUserService;
@@ -16,7 +17,9 @@ import ru.izpz.s21meet.util.ReplyMessages;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ru.izpz.s21meet.util.ValidationUtils.*;
 
@@ -34,6 +37,7 @@ public class MessageHandler {
     private final TelegramUserService telegramUserService;
     private final TelegramMessageService telegramMessageService;
     private final GoogleSheetsService googleSheetsService;
+    private final GoogleAnalyticsService googleAnalyticsService;
 
     public void handle(long chatId, String message) {
         message = message.trim();
@@ -43,12 +47,24 @@ public class MessageHandler {
         } else {
             processUserStatus(telegramUser, message);
         }
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("message_content", message);
+        eventParams.put("chat_id", chatId);
+
+        googleAnalyticsService.sendEvent(String.valueOf(chatId), "message_received", eventParams);
     }
 
     private void registerNewUser(long chatId) {
         telegramMessageService.sendMessage(chatId, ReplyMessages.NEW_USER);
         telegramMessageService.sendMessage(chatId, ReplyMessages.SCHOOL_LOGIN);
         telegramUserService.addUser(chatId);
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("status", Status.NEW.toString());
+        eventParams.put("chat_id", chatId);
+
+        googleAnalyticsService.sendEvent(String.valueOf(chatId), "status", eventParams);
     }
 
     private void processUserStatus(TelegramUser telegramUser, String message) {
@@ -70,6 +86,12 @@ public class MessageHandler {
 
         // Сохранение изменений только один раз после всей обработки
         telegramUserService.update(telegramUser);
+
+        Map<String, Object> eventParams = new HashMap<>();
+        eventParams.put("status", telegramUser.getStatus().toString());
+        eventParams.put("chat_id", telegramUser.getChatId());
+
+        googleAnalyticsService.sendEvent(String.valueOf(telegramUser.getChatId()), "status", eventParams);
     }
     private void promptSchoolLogin(TelegramUser telegramUser) {
         telegramMessageService.sendMessage(telegramUser.getChatId(), ReplyMessages.SCHOOL_LOGIN);
